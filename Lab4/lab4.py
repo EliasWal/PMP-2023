@@ -61,21 +61,21 @@ plt.show()
 target_prob = 0.95
 max_wait_time = 15
 
-alpha_max = -np.log(1-target_prob)/max_wait_time
-print(f'α maxim pentru a servi mancarea în mai puțin de 15 minute tuturor clienților cu o probabilitate de 95%: {alpha_max:.4f}')
+# alpha_max = -np.log(1-target_prob)/max_wait_time
+# print(f'α maxim pentru a servi mancarea în mai puțin de 15 minute tuturor clienților cu o probabilitate de 95%: {alpha_max:.4f}')
 
 
-# alpha_max = None
-# for alpha_candidate in np.linspace(0.001, 10, 1000):
-#     cumulative_prob = 1 - np.exp(-alpha_candidate * max_wait_time)
-#     if cumulative_prob >= target_prob:
-#         alpha_max = alpha_candidate
-#         break
+alpha_max = None
+for alpha_candidate in np.linspace(0.001, 10, 1000):
+    cumulative_prob = 1 - np.exp(-alpha_candidate * max_wait_time)
+    if cumulative_prob >= target_prob:
+        alpha_max = alpha_candidate
+        break
 
-# if alpha_max is not None:
-#     print(f'α maxim pentru a servi masa în mai puțin de 15 minute tuturor clienților cu o probabilitate de 95%: {alpha_max:.4f}')
-# else:
-#     print('Nu s-a găsit o soluție.')
+if alpha_max is not None:
+    print(f'α maxim pentru a servi masa în mai puțin de 15 minute tuturor clienților cu o probabilitate de 95%: {alpha_max:.4f}')
+else:
+    print('Nu s-a găsit o soluție.')
 
 # Timpul mediu de așteptare
 mean_wait_time = 1 / alpha_max
