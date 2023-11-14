@@ -1,0 +1,35 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import pymc as pm
+import numpy as np
+import arviz as az
+
+data = pd.read_csv("auto-mpg.csv")
+
+plt.scatter(data['horsepower'], data['mpg'], color='blue')
+plt.xlabel('Horsepower (CP)')
+plt.ylabel('Miles per Gallon (MPG)')
+
+
+with pm.Model() as model:
+	alpha = pm.Normal('alpha', mu=0, sigma=10)
+	beta = pm.Normal('beta', mu=0, sigma=1)
+	std_dev = pm.HalfCauchy('std_dev', 5)
+	
+	y = alpha + beta * data['horsepower'].values
+	mpg_likelihood = pm.Normal('mpg', mu=y, sigma=std_dev, observed=data['mpg'].values)
+	
+	trace = pm.sample(2000, tune=2000)
+
+az.plot_trace(trace, var_names=['alpha', 'beta', 'std_dev'])
+
+posterior_samples = pm.sample_posterior_predictive(trace, model=model, samples=100)
+plt.plot(data['horsepower'], posterior_samples['mpg'].T, 'gray', alpha=0.5)
+plt.plot(data['horsepower'], trace['alpha'].mean() + trace['beta'].mean() * data['horsepower'], 'k',
+         label=f'y = {trace["alpha"].mean():.2f} + {trace["beta"].mean():.2f} * x')
+
+az.plot_hdi(data['horsepower'].values, posterior_samples['mpg'], hdi_prob=0.95, color='k')
+plt.xlabel('Horsepower (CP)')
+plt.ylabel('Miles per Gallon (MPG)')
+
+plt.show()
