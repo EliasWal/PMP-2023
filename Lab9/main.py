@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+GRE_SCORE = 550
+GPA_SCORE = 3.5
+
 def build_logistic_model(gre_scores, gpa_scores, admission_results):
     with pm.Model() as logistic_model:
         beta0 = pm.Normal('beta0', mu=0, sigma=10)
@@ -45,7 +48,7 @@ def main():
     gre_scores = data['GRE'].values
     gpa_scores = data['GPA'].values
     admission_results = data['Admission'].values
-
+    # a)
     # Build logistic model
     logistic_model = build_logistic_model(gre_scores, gpa_scores, admission_results)
 
@@ -56,8 +59,29 @@ def main():
     # Plot posterior distributions
     pm.plot_posterior(trace, var_names=['beta0', 'beta1', 'beta2'], figsize=(12, 6))
     plt.show()
-
+    # b)
     plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results)
+
+    # c)
+    GRE_SCORE = 550
+    GPA_SCORE = 3.5
+
+    p_student_samples = pm.invlogit(trace['beta0'] + trace['beta1'] * GRE_SCORE + trace['beta2'] * GPA_SCORE)
+
+    hdi_prob = pm.hpd(p_student_samples, hdi_prob=0.9)
+
+    print(f"90% HDI for probability of admission: {hdi_prob}")
+
+    # d)
+    GRE_SCORE_NEW = 500
+    GPA_SCORE_NEW = 3.2
+
+    p_student_samples_new = pm.invlogit(trace['beta0'] + trace['beta1'] * GRE_SCORE_NEW + trace['beta2'] * GPA_SCORE_NEW)
+
+    hdi_prob_new = pm.hpd(p_student_samples_new, hdi_prob=0.9)
+
+    print(f"90% HDI for probability of admission (new student): {hdi_prob_new}")
+
 
 
 if __name__ == "__main__":
