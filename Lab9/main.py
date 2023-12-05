@@ -18,10 +18,11 @@ def build_logistic_model(gre_scores, gpa_scores, admission_results):
 
     return logistic_model
 
+
 def plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results):
-    beta0_samples = trace['beta0']
-    beta1_samples = trace['beta1']
-    beta2_samples = trace['beta2']
+    beta0_samples = trace.posterior['beta0'].values
+    beta1_samples = trace.posterior['beta1'].values
+    beta2_samples = trace.posterior['beta2'].values
 
     p_samples = pm.invlogit(beta0_samples + beta1_samples * gre_scores + beta2_samples * gpa_scores)
 
@@ -42,6 +43,8 @@ def plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results):
 
 
 
+
+
 def main():
     # Load data
     data = pd.read_csv('Admission.csv')
@@ -54,11 +57,12 @@ def main():
 
     # Sample from the posterior distribution
     with logistic_model:
-        trace = pm.sample(10000, tune=2000, chains=2)
+        trace = pm.sample(10000, tune=4000, chains=4)
 
     # Plot posterior distributions
     pm.plot_posterior(trace, var_names=['beta0', 'beta1', 'beta2'], figsize=(12, 6))
     plt.show()
+
     # b)
     plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results)
 
