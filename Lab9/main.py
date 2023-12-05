@@ -15,6 +15,30 @@ def build_logistic_model(gre_scores, gpa_scores, admission_results):
 
     return logistic_model
 
+def plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results):
+    beta0_samples = trace['beta0']
+    beta1_samples = trace['beta1']
+    beta2_samples = trace['beta2']
+
+    p_samples = pm.invlogit(beta0_samples + beta1_samples * gre_scores + beta2_samples * gpa_scores)
+
+    p_mean = np.mean(p_samples, axis=0)
+
+    plt.figure(figsize=(18, 10))
+    plt.scatter(gre_scores, gpa_scores, c=admission_results, cmap='viridis', edgecolors='k', marker='o', s=50, alpha=0.8)
+    plt.contour(gre_scores, gpa_scores, p_mean.reshape(gre_scores.shape), levels=[0.5], colors='red', linewidths=2)
+
+    hdi = pm.hpd(p_samples)
+    plt.fill_between(gre_scores, hdi[:, 0], hdi[:, 1], color='orange', alpha=0.3, label='94% HDI')
+
+    plt.xlabel('GRE Score')
+    plt.ylabel('GPA')
+    plt.title('Decision Boundary and 94% HDI')
+    plt.legend()
+    plt.show()
+
+
+
 def main():
     # Load data
     data = pd.read_csv('Admission.csv')
@@ -32,6 +56,9 @@ def main():
     # Plot posterior distributions
     pm.plot_posterior(trace, var_names=['beta0', 'beta1', 'beta2'], figsize=(12, 6))
     plt.show()
+
+    plot_decision_boundary(trace, gre_scores, gpa_scores, admission_results)
+
 
 if __name__ == "__main__":
     main()
